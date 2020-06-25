@@ -1,0 +1,27 @@
+on:
+  push:
+    branches: [main]
+
+env:
+  NODE_VERSION: '10.x' # set this to the node version to use
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm install
+        run: |
+          npm install
+      - name: 'Deploying to Twilio'
+        run: |
+          npm run ci:deploy-functions --if-present
+          npm run ci:deploy-flows --if-present
+        env:
+          ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
