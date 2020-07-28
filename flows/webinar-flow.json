@@ -49,7 +49,7 @@
         },
         "loop": 1,
         "finish_on_key": "",
-        "say": "Hey there, what demo would you like to know more? Press 1 for the Studio demo. Press 2 for Voice Notifications. Press 3 for SendGrid Webhook Security",
+        "say": "Hey there, what demo would you like to know more? Press 1 for the Studio demo.",
         "language": "en",
         "stop_gather": false,
         "gather_language": "en",
