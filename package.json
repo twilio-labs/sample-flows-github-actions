@@ -10,9 +10,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "lodash": "^4.17.15",
-    "twilio": "^3.47.0",
-    "twilio-run": "^2.8.0-beta.1"
+    "lodash": "^4.17.21",
+    "twilio": "^3.54.2",
+    "twilio-run": "^2.8.0"
   },
   "engines": {
     "node": "10"
