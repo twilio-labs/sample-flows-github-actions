@@ -1,0 +1,637 @@
+{
+  "description": "CA Regulatory Flow",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "event": "incomingMessage"
+        },
+        {
+          "next": "Welcome_message1",
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 650,
+          "y": -620
+        }
+      }
+    },
+    {
+      "name": "CA_Send_To_Live_Agent",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Create_CA_Regulatory_Case",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -150,
+          "y": 1320
+        },
+        "loop": 1,
+        "say": "Thank you for confirming your state is California, we are sending you over to our support line.  We will have an agent with you as soon as possible."
+      }
+    },
+    {
+      "name": "Create_CA_Regulatory_Case",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "next": "Send_to_Phone_California",
+          "event": "completed"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FW3ddd722b19e4d6c348235db77ec482cb",
+        "flow_revision": "LatestPublished",
+        "offset": {
+          "x": -140,
+          "y": 1580
+        },
+        "parameters": [
+          {
+            "value": "{{flow.sid}}",
+            "key": "FlowExecutionSID"
+          },
+          {
+            "value": "00G5e000003d2WZEAY",
+            "key": "SalesforceQueueID"
+          },
+          {
+            "value": "{{trigger.message.ChannelSid}}",
+            "key": "ChannelSID"
+          },
+          {
+            "value": "{{trigger.call.From}}",
+            "key": "CustomerNumber"
+          },
+          {
+            "value": "inbound_call",
+            "key": "ChannelType"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Send_to_Phone_California",
+      "type": "send-to-flex",
+      "transitions": [
+        {
+          "event": "callComplete"
+        },
+        {
+          "event": "failedToEnqueue"
+        },
+        {
+          "event": "callFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -150,
+          "y": 1910
+        },
+        "workflow": "WWb59e9469e5c13ecca37b6c47eab2bb61",
+        "channel": "TC4ac7415d1e89d2c97e5e24935ee8c5da",
+        "attributes": "{\"case_id\": \"{{widgets.Create_CA_Regulatory_Case.TaskAttributes_case_id}}\",\"type\":\"inbound\"}",
+        "waitUrlMethod": "POST"
+      }
+    },
+    {
+      "name": "Welcome_message1",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Say_State",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 790,
+          "y": -280
+        },
+        "loop": 1,
+        "say": "Thank you for calling Stripe."
+      }
+    },
+    {
+      "name": "Say_State",
+      "type": "gather-input-on-call",
+      "transitions": [
+        {
+          "event": "keypress"
+        },
+        {
+          "next": "CA_or_not_CA",
+          "event": "speech"
+        },
+        {
+          "next": "No_input_or_not_state_speak",
+          "event": "timeout"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "offset": {
+          "x": 760,
+          "y": 40
+        },
+        "hints": "Alabama,Alaska,Arizona,Arkansas,California,Colorado,Connecticut,Delaware,Florida,Georgia,Hawaii,Idaho,Illinois,Indiana,Iowa,Kansas,Kentucky,Louisiana,Maine,Maryland,Massachusetts,Michigan,Minnesota,Mississippi,Missouri,Montana,Nebraska,Nevada,New Jersey,New Mexico,New York,North Carolina,North Dakota,Ohio,Oklahoma,Oregon,Pennsylvania,Rhode Island,South Carolina,South Dakota,Tennessee,Texas,Utah,Vermont,Virginia,Washington,West Virginia,Wisconsin,Wyoming",
+        "finish_on_key": "#",
+        "say": "Please say the full name of the state where your account is registered.  Example, if your Stripe account is based in Washington, say Washington. Then press the pound key.",
+        "language": "en-US",
+        "stop_gather": true,
+        "profanity_filter": "true",
+        "timeout": 5,
+        "number_of_digits": 1,
+        "speech_timeout": "auto",
+        "loop": 1,
+        "gather_language": "en-US"
+      }
+    },
+    {
+      "name": "CA_or_not_CA",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "No_input_or_not_state_speak",
+          "event": "noMatch"
+        },
+        {
+          "next": "Business_Hours_Check",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to California",
+              "arguments": [
+                "{{widgets.Say_State.SpeechResult}}"
+              ],
+              "type": "equal_to",
+              "value": "California"
+            }
+          ]
+        },
+        {
+          "next": "Not_CA_Redirect_To_Voicemail",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value matches_any_of Alabama,Alaska,Arizona,Arkansas,Colorado,Connecticut,Delaware,Florida,Georgia,Hawaii,Idaho,Illinois,Indiana,Iowa,Kansas,Kentucky,Louisiana,Maine,Maryland,Massachusetts,Michigan,Minnesota,Mississippi,Missouri,Montana,Nebraska,Nevada,New Jersey,New Mexico,New York,North Carolina,North Dakota,Ohio,Oklahoma,Oregon,Pennsylvania,Rhode Island,South Carolina,South Dakota,Tennessee,Texas,Utah,Vermont,Virginia,Washington,West Virginia,Wisconsin,Wyoming",
+              "arguments": [
+                "{{widgets.Say_State.SpeechResult}}"
+              ],
+              "type": "matches_any_of",
+              "value": "Alabama,Alaska,Arizona,Arkansas,Colorado,Connecticut,Delaware,Florida,Georgia,Hawaii,Idaho,Illinois,Indiana,Iowa,Kansas,Kentucky,Louisiana,Maine,Maryland,Massachusetts,Michigan,Minnesota,Mississippi,Missouri,Montana,Nebraska,Nevada,New Jersey,New Mexico,New York,North Carolina,North Dakota,Ohio,Oklahoma,Oregon,Pennsylvania,Rhode Island,South Carolina,South Dakota,Tennessee,Texas,Utah,Vermont,Virginia,Washington,West Virginia,Wisconsin,Wyoming"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.Say_State.SpeechResult}}",
+        "offset": {
+          "x": -200,
+          "y": 1190
+        }
+      }
+    },
+    {
+      "name": "No_input_or_not_state_speak",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Say_State",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1270,
+          "y": 290
+        },
+        "loop": 1,
+        "say": "I'm sorry, we either didn't hear anything or you said something we didn't recognize."
+      }
+    },
+    {
+      "name": "Not_CA_Redirect_To_Voicemail",
+      "type": "gather-input-on-call",
+      "transitions": [
+        {
+          "next": "Press_1_for_Voicemail",
+          "event": "keypress"
+        },
+        {
+          "event": "speech"
+        },
+        {
+          "event": "timeout"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "speech_timeout": "auto",
+        "offset": {
+          "x": 1240,
+          "y": 1130
+        },
+        "loop": 1,
+        "finish_on_key": "#",
+        "say": "Thank you. To best assist you, we strongly encourage you to reach out to our Support team by visiting support.stripe.com or by logging into your Stripe dashboard to submit a request. Submitting requests through authenticated channels offers the best and quickest support from our agents. If you would like to continue to leave a message for our Support Team, please press 1, otherwise feel free to hang up and go to our Stripe Support page or your Stripe dashboard for additional support.",
+        "language": "en-US",
+        "stop_gather": true,
+        "gather_language": "en",
+        "profanity_filter": "true",
+        "timeout": 5
+      }
+    },
+    {
+      "name": "Press_1_for_Voicemail",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        },
+        {
+          "next": "Record_Message_Intro",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.Not_CA_Redirect_To_Voicemail.Digits}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.Not_CA_Redirect_To_Voicemail.Digits}}",
+        "offset": {
+          "x": 1250,
+          "y": 1450
+        }
+      }
+    },
+    {
+      "name": "Record_Message_Intro",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Record_Voicemail",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "offset": {
+          "x": 1230,
+          "y": 1750
+        },
+        "loop": 1,
+        "say": "Please leave your message after the beep.  When you are finished, please press the pound button.",
+        "language": "en-US"
+      }
+    },
+    {
+      "name": "Record_Voicemail",
+      "type": "record-voicemail",
+      "transitions": [
+        {
+          "next": "Repeat_back_message",
+          "event": "recordingComplete"
+        },
+        {
+          "next": "Nothing_captured_message",
+          "event": "noAudio"
+        },
+        {
+          "event": "hangup"
+        }
+      ],
+      "properties": {
+        "transcribe": false,
+        "offset": {
+          "x": 1230,
+          "y": 2000
+        },
+        "trim": "trim-silence",
+        "play_beep": "true",
+        "finish_on_key": "#",
+        "timeout": 5,
+        "max_length": 3600
+      }
+    },
+    {
+      "name": "Nothing_captured_message",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Record_Voicemail",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "offset": {
+          "x": 1850,
+          "y": 1960
+        },
+        "loop": 1,
+        "say": "I'm sorry, i didn't catch anything. \n Please try again after the beep.",
+        "language": "en-US"
+      }
+    },
+    {
+      "name": "Repeat_back_message",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Offer_To_Retry",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "play": "{{widgets.Record_Voicemail.RecordingUrl}}",
+        "offset": {
+          "x": 1250,
+          "y": 2270
+        },
+        "loop": 1
+      }
+    },
+    {
+      "name": "Offer_To_Retry",
+      "type": "gather-input-on-call",
+      "transitions": [
+        {
+          "next": "Check_Decision",
+          "event": "keypress"
+        },
+        {
+          "event": "speech"
+        },
+        {
+          "next": "Input_Not_Recognized",
+          "event": "timeout"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "number_of_digits": 1,
+        "speech_timeout": "auto",
+        "offset": {
+          "x": 1280,
+          "y": 2460
+        },
+        "loop": 1,
+        "finish_on_key": "#",
+        "say": "If you are satisfied with your message press 1, to retry press 7.",
+        "language": "en-US",
+        "stop_gather": true,
+        "gather_language": "en",
+        "profanity_filter": "true",
+        "timeout": 5
+      }
+    },
+    {
+      "name": "Input_Not_Recognized",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Repeat_back_message",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "offset": {
+          "x": 1890,
+          "y": 2690
+        },
+        "loop": 1,
+        "say": "I'm sorry, I either did not catch your input or it was not a valid option.",
+        "language": "en-US"
+      }
+    },
+    {
+      "name": "Check_Decision",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "Input_Not_Recognized",
+          "event": "noMatch"
+        },
+        {
+          "next": "Goodbye",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 1",
+              "arguments": [
+                "{{widgets.Offer_To_Retry.Digits}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "Record_Message_Intro",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "If value equal_to 7",
+              "arguments": [
+                "{{widgets.Offer_To_Retry.Digits}}"
+              ],
+              "type": "equal_to",
+              "value": "7"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.Offer_To_Retry.Digits}}",
+        "offset": {
+          "x": 950,
+          "y": 2730
+        }
+      }
+    },
+    {
+      "name": "Goodbye",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "Create_Voicemail_Case",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "voice": "Polly.Kimberly-Neural",
+        "offset": {
+          "x": 1300,
+          "y": 3040
+        },
+        "loop": 1,
+        "say": "Thank you.  We will send this request over to our Support Team and they will reach out as soon as they have had a chance to review your message.  Goodbye!",
+        "language": "en-US"
+      }
+    },
+    {
+      "name": "Create_Voicemail_Case",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "next": "Voicemail_Recording_Subflow",
+          "event": "completed"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FW3ddd722b19e4d6c348235db77ec482cb",
+        "flow_revision": "LatestPublished",
+        "offset": {
+          "x": 1300,
+          "y": 3300
+        },
+        "parameters": [
+          {
+            "value": "voicemail",
+            "key": "ChannelType"
+          },
+          {
+            "value": "{{trigger.message.ChannelSid}}",
+            "key": "ChannelSID"
+          },
+          {
+            "value": "{{trigger.call.From}}",
+            "key": "CustomerNumber"
+          },
+          {
+            "value": "{{flow.sid}}",
+            "key": "FlowExecutionSID"
+          },
+          {
+            "value": "00G5e000003d2WZEAY",
+            "key": "SalesforceQueueID"
+          },
+          {
+            "value": "{{trigger.call.CalledCountry}}",
+            "key": "CalledCountry"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Voicemail_Recording_Subflow",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "event": "completed"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FWb9f4ff03afde43174573634b8dec053f",
+        "flow_revision": "LatestPublished",
+        "offset": {
+          "x": 1310,
+          "y": 3540
+        },
+        "parameters": [
+          {
+            "value": "{{widgets.Create_Voicemail_Case.TaskAttributes_case_id}}",
+            "key": "CaseID"
+          },
+          {
+            "value": "{{widgets.Record_Voicemail.RecordingUrl}}",
+            "key": "SegmentLink"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Business_Hours_Check",
+      "type": "run-subflow",
+      "transitions": [
+        {
+          "event": "completed"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "flow_sid": "FWb552acd55e1c802ef3ede4a0a9cf20b5",
+        "flow_revision": "LatestPublished",
+        "offset": {
+          "x": -30,
+          "y": 830
+        },
+        "parameters": [
+          {
+            "value": "inbound_call",
+            "key": "ChannelType"
+          },
+          {
+            "value": "en-US",
+            "key": "Locale"
+          },
+          {
+            "value": "{{'now' | date: \"%Y-%m-%dT%H:%M:%S %Z\"}}",
+            "key": "Timestamp"
+          },
+          {
+            "value": "{{flow.sid}}",
+            "key": "ChannelSID"
+          }
+        ]
+      }
+    },
+    {
+      "name": "split_1",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "event": "noMatch"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 1100
+        }
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}
