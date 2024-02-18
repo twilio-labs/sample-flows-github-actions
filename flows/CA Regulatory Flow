@@ -480,26 +480,6 @@
       }
     },
     {
-      "name": "Goodbye",
-      "type": "say-play",
-      "transitions": [
-        {
-          "next": "Create_Voicemail_Case",
-          "event": "audioComplete"
-        }
-      ],
-      "properties": {
-        "voice": "Polly.Kimberly-Neural",
-        "offset": {
-          "x": 1300,
-          "y": 3040
-        },
-        "loop": 1,
-        "say": "Thank you.  We will send this request over to our Support Team and they will reach out as soon as they have had a chance to review your message.  Goodbye!",
-        "language": "en-US"
-      }
-    },
-    {
       "name": "Create_Voicemail_Case",
       "type": "run-subflow",
       "transitions": [
@@ -512,7 +492,7 @@
         }
       ],
       "properties": {
-        "flow_sid": "FW3ddd722b19e4d6c348235db77ec482cb",
+        "flow_sid": "FW2ee7f4020ce22db5bd8437dddb1d69e6",
         "flow_revision": "LatestPublished",
         "offset": {
           "x": 1300,
