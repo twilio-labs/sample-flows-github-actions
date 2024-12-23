@@ -14,21 +14,21 @@ exports.handler = async function (context, event, callback) {
   
     // Operator didn't answer
     if (operatorId && (['no-answer', 'busy', 'failed', 'canceled'].includes(dialCallStatus))) {
-      // let newStatus = 'available';
+      let newStatus = 'available';
   
-      // // Update operator status in Supabase
-      // const { data, error } = await supabase
-      //   .from('call_operators')
-      //   .update({ status: newStatus, designated_call_sid: null })
-      //   .eq('id', operatorId)
-      //   .eq('designated_call_sid', customerCallSid);
+      // Update operator status in Supabase
+      const { data, error } = await supabase
+        .from('call_operators')
+        .update({ status: newStatus, designated_call_sid: null })
+        .eq('id', operatorId)
+        .eq('designated_call_sid', customerCallSid);
   
-      // if (error) {
-      //   console.error('Error updating operator status:', error);
-      //   const detailedError = JSON.stringify(error, Object.getOwnPropertyNames(error))
-      //   // TODO: redirect call to fallback
-      //   return callback(detailedError);
-      // }
+      if (error) {
+        console.error('Error updating operator status:', error);
+        const detailedError = JSON.stringify(error, Object.getOwnPropertyNames(error))
+        // TODO: redirect call to fallback
+        return callback(detailedError);
+      }
   
       // Operator didn't answer; try the next operator
       // Get the excludeOperatorIds from the query parameters
