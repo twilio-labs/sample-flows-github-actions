@@ -14,14 +14,16 @@ exports.handler = async function (context, event, callback) {
 
   const { data: callData, error: callError } = await supabase
     .from('calls')
-    .select('caller_name')
+    .select('caller_name, from_number')
     .eq('call_sid', CallSid)
     .single();
+
+  console.log('DATA', callData)
 
   const userDefinedMessage = await client
     .calls(customerCallSid)
     .userDefinedMessages.create({
-      content: JSON.stringify({ callerName: callData.caller_name }),
+      content: JSON.stringify({ callerName: callData.caller_name, fromNumber: callData.from_number }),
     });
 
   const { error } = await supabase
